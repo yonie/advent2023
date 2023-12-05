@@ -10,19 +10,19 @@ const rl = readline.createInterface({
 })
 
 let [sum, sum2] = [0, 0]
-let cards = []
+const cards = []
 
 rl.on('line', line => {
   cards.push(line)
 })
 
-let reward = []
-let cardStack = []
+const reward = []
+const cardStack = []
 
 rl.on('close', () => {
   // first, setup array of win points per card
   cards.forEach(card => {
-    let cardId = card.split(':')[0].match(/(\d)+/)[0]
+    const cardId = card.split(':')[0].match(/(\d)+/)[0]
     reward[cardId] = calculateReward(card)
     cardStack[cardId] = 1
   })
@@ -38,8 +38,8 @@ rl.on('close', () => {
 
 function processCards () {
   for (let cardId = 1; cardId < cardStack.length; cardId++) {
-    let cardsWon = reward[cardId]
-    let multiplier = cardStack[cardId]
+    const cardsWon = reward[cardId]
+    const multiplier = cardStack[cardId]
 
     // keep track for the answer
     sum2 += multiplier
@@ -61,7 +61,7 @@ function calculateReward (card) {
 
   myNumbers.forEach(number => {
     if (winningNumbers.includes(number)) {
-      if (points == 0) points = 1
+      if (points === 0) points = 1
       else points *= 2
       copies += 1
     }

@@ -27,17 +27,18 @@ rl.on('close', () => {
 
 function processEngineSchematic () {
   for (let y = 0; y < engineSchematic.length; y++) {
-    let partsInSchematicRow = engineSchematic[y].matchAll(/([0-9]+)/g)
+    const partsInSchematicRow = engineSchematic[y].matchAll(/([0-9]+)/g)
 
     for (const foundPart of partsInSchematicRow) {
       // we validate if the part is connected to a symbol in the schematic
-      if (validatePartNumber(y, foundPart.index, foundPart[0]))
+      if (validatePartNumber(y, foundPart.index, foundPart[0])) {
         sum += Number(foundPart[0])
+      }
     }
   }
 }
 
-let gearsWithPartNumbers = {}
+const gearsWithPartNumbers = {}
 
 function validatePartNumber (locationY, locationX, partNumber) {
   // search 'around' the found part for nearby symbols
@@ -49,14 +50,14 @@ function validatePartNumber (locationY, locationX, partNumber) {
     ) {
       if (searchX < 0 || searchY < 0) continue
       if (!engineSchematic[searchY]) continue
-      char = engineSchematic[searchY][searchX]
-      if (char == '*') {
+      const char = engineSchematic[searchY][searchX]
+      if (char === '*') {
         // this means we found a gear
-        let coordinates = `${searchY},${searchX}`
+        const coordinates = `${searchY},${searchX}`
         // we store the first found part number, and multiply for the result if we find the second one
-        if (gearsWithPartNumbers[coordinates])
+        if (gearsWithPartNumbers[coordinates]) {
           sum2 += gearsWithPartNumbers[coordinates] * partNumber
-        else gearsWithPartNumbers[coordinates] = partNumber
+        } else gearsWithPartNumbers[coordinates] = partNumber
       }
       if (acceptedChars.includes(char)) return true
     }
