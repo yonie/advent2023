@@ -35,6 +35,14 @@
       "skipFiles": ["<node_internals>/**"],
       "program": "${workspaceFolder}\\04\\script.js",
       "cwd": "${workspaceFolder}\\04\\"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "05",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}\\05\\script.js",
+      "cwd": "${workspaceFolder}\\05\\"
     }
   ]
 }
