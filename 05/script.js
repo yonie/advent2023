@@ -39,7 +39,7 @@ rl.on('line', line => {
     const destinationRangeStart = Number(mapData[0])
     const sourceRangeStart = Number(mapData[1])
     const rangeLength = Number(mapData[2])
-    maps[lastSeenMapType].set(
+    maps[lastSeenMapType].addRange(
       destinationRangeStart,
       sourceRangeStart,
       rangeLength
@@ -57,14 +57,21 @@ rl.on('close', () => {
 
   // part 2 using reverse search (starting from lowest location)
   let lowestLocation2 = -1
-  for (let location = 0; lowestLocation2 < 0; location++) {
+  for (
+    let location = 0;
+    lowestLocation2 < 0;
+    location++
+  ) {
     const seed = findSeed(location)
-    for (const range of seedRanges) {
-      const rangeStart = Number(range[1])
-      const rangeLength = Number(range[2])
-      if (seed >= rangeStart && seed < rangeStart + rangeLength) {
-        lowestLocation2 = location
-      }
+    for (let counter = 0; counter < seedRanges.length; counter++) {
+      const rangeStart = Number(seedRanges[counter][1])
+      if (seed < rangeStart) continue
+
+      const rangeLength = Number(seedRanges[counter][2])
+      if (seed > rangeStart + rangeLength) continue
+
+      lowestLocation2 = location
+      break
     }
   }
 
@@ -85,23 +92,20 @@ function findLocation (seed) {
   return location
 }
 
+// optimized to run faster vs findLocation
 function findSeed (location) {
-  const humidity = getSourceFromMap('humidity-to-location', location)
-  const temperature = getSourceFromMap('temperature-to-humidity', humidity)
-  const light = getSourceFromMap('light-to-temperature', temperature)
-  const water = getSourceFromMap('water-to-light', light)
-  const fertilizer = getSourceFromMap('fertilizer-to-water', water)
-  const soil = getSourceFromMap('soil-to-fertilizer', fertilizer)
-  const seed = getSourceFromMap('seed-to-soil', soil)
+  const humidity = maps['humidity-to-location'].getSource(location)
+  const temperature = maps['temperature-to-humidity'].getSource(humidity)
+  const light = maps['light-to-temperature'].getSource(temperature)
+  const water = maps['water-to-light'].getSource(light)
+  const fertilizer = maps['fertilizer-to-water'].getSource(water)
+  const soil = maps['soil-to-fertilizer'].getSource(fertilizer)
+  const seed = maps['seed-to-soil'].getSource(soil)
   return seed
 }
 
 function getDestinationFromMap (type, source) {
   return maps[type].getDestination(source) || source
-}
-
-function getSourceFromMap (type, destination) {
-  return maps[type].getSource(destination) || destination
 }
 
 class LargeRangeMap {
@@ -112,8 +116,6 @@ class LargeRangeMap {
   getDestination (source) {
     let found = null
     this._ranges.forEach(range => {
-      if (found) return
-
       const sourceRangeStart = range[1]
       const rangeLength = range[2]
       if (
@@ -121,33 +123,31 @@ class LargeRangeMap {
         source < sourceRangeStart + rangeLength
       ) {
         const destinationRangeStart = range[0]
-        const transposition = destinationRangeStart - sourceRangeStart
-        found = source + transposition
+        const delta = destinationRangeStart - sourceRangeStart
+        found = source + delta
       }
     })
     return found
   }
 
   getSource (destination) {
-    let found = null
-    this._ranges.forEach(range => {
-      if (found) return
+    const numRanges = this._ranges.length
+    for (let counter = 0; counter < numRanges; counter++) {
+      const destinationRangeStart = this._ranges[counter][0]
+      if (destination < destinationRangeStart) continue
 
-      const destinationRangeStart = range[0]
-      const sourceRangeStart = range[1]
-      const rangeLength = range[2]
-      if (
-        destination >= destinationRangeStart &&
-        destination < destinationRangeStart + rangeLength
-      ) {
-        const transposition = destinationRangeStart - sourceRangeStart
-        found = destination - transposition
-      }
-    })
-    return found
+      const rangeLength = this._ranges[counter][2]
+      if (destination > destinationRangeStart + rangeLength) continue
+
+      const sourceRangeStart = this._ranges[counter][1]
+      const delta = destinationRangeStart - sourceRangeStart
+      return destination - delta
+    }
+    return destination
   }
 
-  set (destinationRangeStart, sourceRangeStart, rangeLength) {
+  addRange (destinationRangeStart, sourceRangeStart, rangeLength) {
     this._ranges.push([destinationRangeStart, sourceRangeStart, rangeLength])
+    this._ranges.sort((a, b) => b[2] - a[2])
   }
 }
