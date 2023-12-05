@@ -57,11 +57,7 @@ rl.on('close', () => {
 
   // part 2 using reverse search (starting from lowest location)
   let lowestLocation2 = -1
-  for (
-    let location = 0;
-    lowestLocation2 < 0;
-    location++
-  ) {
+  for (let location = 0; lowestLocation2 < 0; location++) {
     const seed = findSeed(location)
     for (let counter = 0; counter < seedRanges.length; counter++) {
       const rangeStart = Number(seedRanges[counter][1])
