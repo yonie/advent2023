@@ -42,11 +42,14 @@ rl.on('close', () => {
   races.push([combinedTime, combinedDistances])
 
   races.forEach(race => {
-    const numWinningDistances = getNumWinningDistances(race[0], race[1])
+    const totalPossibleDistances = Number(race[0]) + 1
+    const numWinningDistances =
+      totalPossibleDistances - countLosingDistances(race[0], race[1])
     console.log(
       `Race: (${race}). Winning distances count:`,
       numWinningDistances
     )
+
     sum = sum ? sum * numWinningDistances : numWinningDistances
     console.log('Sum so far:', sum)
   })
@@ -56,17 +59,19 @@ rl.on('close', () => {
   console.log(`runtime: ${runtimeMs} ms`)
 })
 
-function getNumWinningDistances (raceTime, recordDistance) {
+function countLosingDistances (raceTime, recordDistance) {
   let num = 0
   let chargeTime = 0
+  // the distribution of races is mirrored so we only check first half
   while (chargeTime <= raceTime / 2) {
     // note that velocity is the same as charge time
     const travelDistance = (raceTime - chargeTime) * chargeTime
-    if (travelDistance > recordDistance) {
-      // second half of the results is the same, mirrored
-      num =
-        num + (chargeTime === raceTime / 2 ? 1 : 2)
-    }
+
+    if (travelDistance <= recordDistance) {
+      // ensure we handle special case exactly in the middle of distribution
+      num = num + (chargeTime === raceTime / 2 ? 1 : 2)
+    } else break
+
     chargeTime++
   }
   return num
