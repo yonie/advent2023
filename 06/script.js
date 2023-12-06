@@ -43,7 +43,10 @@ rl.on('close', () => {
 
   races.forEach(race => {
     const numWinningDistances = getNumWinningDistances(race[0], race[1])
-    console.log(`Race: (${race}). Winning distances count:`, numWinningDistances)
+    console.log(
+      `Race: (${race}). Winning distances count:`,
+      numWinningDistances
+    )
     sum = sum ? sum * numWinningDistances : numWinningDistances
     console.log('Sum so far:', sum)
   })
@@ -53,14 +56,18 @@ rl.on('close', () => {
   console.log(`runtime: ${runtimeMs} ms`)
 })
 
-function getNumWinningDistances (racetime, recordDistance) {
-  let winningDistances = 0
+function getNumWinningDistances (raceTime, recordDistance) {
+  let num = 0
   let chargeTime = 0
-  while (chargeTime <= racetime) {
+  while (chargeTime <= raceTime / 2) {
     // note that velocity is the same as charge time
-    const travelDistance = (racetime - chargeTime) * chargeTime
-    if (travelDistance > recordDistance) winningDistances++
+    const travelDistance = (raceTime - chargeTime) * chargeTime
+    if (travelDistance > recordDistance) {
+      // second half of the results is the same, mirrored
+      num =
+        num + (chargeTime === raceTime / 2 ? 1 : 2)
+    }
     chargeTime++
   }
-  return winningDistances
+  return num
 }
