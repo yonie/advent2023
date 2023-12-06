@@ -14,6 +14,7 @@ let distances
 let sum
 
 rl.on('line', line => {
+  // parse the inputs
   if (line.startsWith('Time')) {
     times = [...line.matchAll(/\d+/g)]
   }
@@ -41,16 +42,9 @@ rl.on('close', () => {
   races.push([combinedTime, combinedDistances])
 
   races.forEach(race => {
-    const distances = getPossibleDistances(race[0])
-    const winningDistances = []
-    distances?.forEach(distance => {
-      if (distance > race[1]) winningDistances.push(distance)
-    })
-    console.log(
-      `Race: (${race}). Winning distances count:`,
-      winningDistances.length
-    )
-    sum = sum ? sum * winningDistances.length : winningDistances.length
+    const numWinningDistances = getNumWinningDistances(race[0], race[1])
+    console.log(`Race: (${race}). Winning distances count:`, numWinningDistances)
+    sum = sum ? sum * numWinningDistances : numWinningDistances
     console.log('Sum so far:', sum)
   })
 
@@ -59,15 +53,14 @@ rl.on('close', () => {
   console.log(`runtime: ${runtimeMs} ms`)
 })
 
-function getPossibleDistances (racetime) {
-  const distances = []
+function getNumWinningDistances (racetime, recordDistance) {
+  let winningDistances = 0
   let chargeTime = 0
   while (chargeTime <= racetime) {
-    const velocity = chargeTime
-    const movementDuration = racetime - chargeTime
-    const travelDistance = movementDuration * velocity
-    distances.push(travelDistance)
+    // note that velocity is the same as charge time
+    const travelDistance = (racetime - chargeTime) * chargeTime
+    if (travelDistance > recordDistance) winningDistances++
     chargeTime++
   }
-  return distances
+  return winningDistances
 }
