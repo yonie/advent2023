@@ -4,9 +4,9 @@ const rl = require('readline').createInterface({
   input: require('fs').createReadStream('input')
 })
 
-let hands = []
+const hands = []
 
-let handTypes = {
+const handTypes = {
   fiveOfAKind: 7,
   fourOfAKind: 6,
   fullHouse: 5,
@@ -16,7 +16,7 @@ let handTypes = {
   highCard: 1
 }
 
-let camelCards = {
+const camelCards = {
   A: 14,
   K: 13,
   Q: 12,
@@ -37,7 +37,8 @@ rl.on('line', line => {
 })
 
 rl.on('close', () => {
-  let useJokers = true
+  // set "true" for part 2
+  const useJokers = true
   console.log('Using jokers: ', useJokers)
 
   // sort hands to determine rank
@@ -55,10 +56,10 @@ rl.on('close', () => {
       let cardA = a.getCard(num)
       let cardB = b.getCard(num)
       if (useJokers) {
-        if (cardA == 11) cardA = 1
-        if (cardB == 11) cardB = 1
+        if (cardA === 11) cardA = 1
+        if (cardB === 11) cardB = 1
       }
-      if (cardA != cardB) return cardA - cardB
+      if (cardA !== cardB) return cardA - cardB
       else num++
     }
 
@@ -70,8 +71,8 @@ rl.on('close', () => {
 
   for (let num = 0; num < hands.length; num++) {
     // rank is based on sorted position
-    let rank = num + 1
-    let cards = hands[num].getCards()
+    const rank = num + 1
+    const cards = hands[num].getCards()
 
     console.log(
       'Rank: ' +
@@ -115,7 +116,7 @@ function Hand (cards, bid) {
 
 function getType (cards) {
   if (!cards) throw new Error('Missing input.')
-  let cardsSorted = cards
+  const cardsSorted = cards
     .split('')
     .sort(function (a, b) {
       return camelCards[a] - camelCards[b]
@@ -148,8 +149,8 @@ function getBestTypeUsingJokers (cards) {
 
   let bestType = 0
 
-  for (card in camelCards) {
-    let cardsSorted = cards
+  for (const card in camelCards) {
+    const cardsSorted = cards
       .replaceAll('J', card)
       .split('')
       .sort(function (a, b) {
