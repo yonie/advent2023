@@ -38,7 +38,7 @@ rl.on('line', line => {
 
 rl.on('close', () => {
   let useJokers = true
-  console.log("Using jokers: ",useJokers)
+  console.log('Using jokers: ', useJokers)
 
   // sort hands to determine rank
   hands.sort(function (a, b) {
@@ -80,7 +80,9 @@ rl.on('close', () => {
         cards +
         ' Hand type: ' +
         getType(cards) +
-        (useJokers? " Best jokered hand type: " + getBestTypeUsingJokers(cards) : "") +
+        (useJokers
+          ? ' Best jokered hand type: ' + getBestTypeUsingJokers(cards)
+          : '') +
         ' Bid: ' +
         hands[num].getBid()
     )
