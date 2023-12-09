@@ -68,5 +68,13 @@
       "program": "${workspaceFolder}\\08\\script.js",
       "cwd": "${workspaceFolder}\\08\\"
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "09",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}\\09\\script.js",
+      "cwd": "${workspaceFolder}\\09\\"
+    },
   ]
 }
