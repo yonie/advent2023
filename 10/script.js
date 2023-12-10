@@ -100,11 +100,11 @@ function getNextStepVector (pos, lastpos) {
 
 function getStartPosition () {
   let startpos = {}
-  for (let y = 0; y < maze.length; y++) {
-    for (let x = 0; x < maze[0].length; x++) {
-      if (maze[y][x] === 'S') startpos = { x: x, y: y }
-      if (!shadowMaze[y]) shadowMaze[y] = []
-      shadowMaze[y] = maze[y].replaceAll(/[LF7|J.-]/g, '·').split('')
+  for (let searchY = 0; searchY < maze.length; searchY++) {
+    for (let searchX = 0; searchX < maze[0].length; searchX++) {
+      if (maze[searchY][searchX] === 'S') startpos = { x: searchX, y: searchY }
+      if (!shadowMaze[searchY]) shadowMaze[searchY] = []
+      shadowMaze[searchY] = maze[searchY].replaceAll(/[LF7|J.-]/g, '·').split('')
     }
   }
   return startpos
