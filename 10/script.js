@@ -1,49 +1,76 @@
 const startTime = performance.now()
 
+const file = 'input'
+
 const rl = require('readline').createInterface({
-  input: require('fs').createReadStream('input')
+  input: require('fs').createReadStream(file)
 })
 
 const maze = []
+const shadowMaze = []
 
 rl.on('line', line => {
   maze.push(line)
 })
 
 rl.on('close', () => {
+  // hardcoded start pos. see below
+  let currentPos
+  if (file.startsWith('input')) currentPos = { x: 38, y: 16 }
+  else if (file.startsWith('test2')) currentPos = { x: 3, y: 0 }
   const startPos = getStartPosition()
-  let step = 1
-  const pos1 = { x: 38, y: 16 }
-  const pos2 = { x: 36, y: 16 }
-  const lastpos1 = {}
-  const lastpos2 = {}
-  lastpos1.x = startPos.x
-  lastpos1.y = startPos.y
-  lastpos2.x = startPos.x
-  lastpos2.y = startPos.y
+
+  // we start counting at step 1 because we are hardcoding the first step.
+  let stepsTravelled = 1
+  const lastpos = {}
+  lastpos.x = startPos.x
+  lastpos.y = startPos.y
+
   while (true) {
-    const delta1 = getNextPosition(pos1, lastpos1)
-    const delta2 = getNextPosition(pos2, lastpos2)
-    lastpos1.x = pos1.x
-    lastpos1.y = pos1.y
-    lastpos2.x = pos2.x
-    lastpos2.y = pos2.y
-    pos1.x += delta1[0]
-    pos1.y += delta1[1]
-    pos2.x += delta2[0]
-    pos2.y += delta2[1]
-    step++
-    console.log('step', step)
-    console.log('new location pos1:', pos1, 'char is', maze[pos1.y][pos1.x])
-    console.log('new location pos2:', pos2, 'char is', maze[pos2.y][pos2.x])
-    if (pos1.x === pos2.x && pos1.y === pos2.y) break
+    // contains only the travelled path
+    shadowMaze[lastpos.y][lastpos.x] = maze[lastpos.y][lastpos.x]
+
+    const vector = getNextStepVector(currentPos, lastpos)
+    lastpos.x = currentPos.x
+    lastpos.y = currentPos.y
+    currentPos.x += vector[0]
+    currentPos.y += vector[1]
+    stepsTravelled++
+
+    // check if we are done with our full loop
+    if (currentPos.x === startPos.x && currentPos.y === startPos.y) {
+      // update one final time
+      shadowMaze[lastpos.y][lastpos.x] = maze[lastpos.y][lastpos.x]
+      break
+    }
   }
+  console.log('first answer:', stepsTravelled / 2)
+
+  let sumTiles = 0
+
+  shadowMaze.forEach(row => {
+    let tilesInRow = 0
+    const mazeRow = row.join('')
+    // keeps track if we are in the loop or not
+    let isInLoop = false
+    for (let c = 0; c < mazeRow.length; c++) {
+      if (mazeRow[c].match(/[F|7]/)) {
+        // detected an edge, switch
+        isInLoop = !isInLoop
+      } else if (isInLoop && mazeRow[c].match(/[·S]/)) {
+        // note: we are ignoring S as it appears as entry and exit in the same row
+        tilesInRow++
+      }
+    }
+    sumTiles += tilesInRow
+  })
+  console.log('second answer:', sumTiles)
   const endTime = performance.now()
   const runtime = endTime - startTime
   console.log(`runtime: ${runtime} ms`)
 })
 
-function getNextPosition (pos, lastpos) {
+function getNextStepVector (pos, lastpos) {
   // came from below, moving up
   if (maze[pos.y][pos.x] === '|' && lastpos.y === pos.y + 1) return [0, -1]
   // from left moving up
@@ -72,9 +99,13 @@ function getNextPosition (pos, lastpos) {
 }
 
 function getStartPosition () {
+  let startpos = {}
   for (let y = 0; y < maze.length; y++) {
     for (let x = 0; x < maze[0].length; x++) {
-      if (maze[y][x] === 'S') return { x: x, y: y }
+      if (maze[y][x] === 'S') startpos = { x: x, y: y }
+      if (!shadowMaze[y]) shadowMaze[y] = []
+      shadowMaze[y] = maze[y].replaceAll(/[LF7|J.-]/g, '·').split('')
     }
   }
+  return startpos
 }
