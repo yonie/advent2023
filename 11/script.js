@@ -1,6 +1,9 @@
 const startTime = performance.now()
 
 const file = 'input'
+// define *additional* steps counted for each boundary
+// eg. part one uses '1' and part two uses '1000000-1'
+const boundaryDistance = 1000000 - 1
 
 const rl = require('readline').createInterface({
   input: require('fs').createReadStream(file)
@@ -13,20 +16,22 @@ rl.on('line', line => {
 })
 
 rl.on('close', () => {
-  const expandedUniverse = expandUniverse(universe)
-  const galaxies = findGalaxies(expandedUniverse)
+  const boundaries = findBoundaries(universe)
+  const galaxies = findGalaxies(universe)
 
-  let sumDistance = 0
+  let sumDistances = 0
   for (let indexA = 0; indexA < galaxies.length; indexA++) {
     for (let indexB = 0; indexB < galaxies.length; indexB++) {
-      if (indexA === indexB) continue
-      sumDistance += calculateShortestDistance(
+      if (indexA >= indexB) continue
+      sumDistances += calculateShortestDistance(
         galaxies[indexA],
-        galaxies[indexB]
+        galaxies[indexB],
+        boundaries,
+        boundaryDistance
       )
     }
   }
-  console.log('answer 1', sumDistance / 2)
+  console.log('answer', sumDistances)
   const endTime = performance.now()
   const runtime = endTime - startTime
   console.log(`runtime: ${runtime} ms`)
@@ -47,48 +52,57 @@ function findGalaxies (universe) {
   return galaxies
 }
 
-function expandUniverse (universe) {
-  const expandedUniverse = []
-
-  // vertical expansion
-  for (let y = 0; y < universe.length; y++) {
-    expandedUniverse.push(universe[y])
-    if (universe[y].split('').every(val => val === '.')) {
-      expandedUniverse.push(universe[y])
-    }
-  }
-
-  // horizontal expansion
-  const expandX = []
+function findBoundaries (universe) {
+  // horizontal boundaries
+  const bx = []
   for (let x = 0; x < universe[0].length; x++) {
-    let alldots = true
+    let isBoundary = true
     for (let y = 0; y < universe.length; y++) {
-      if (universe[y].charAt(x) !== '.') alldots = false
+      if (universe[y].charAt(x) !== '.') isBoundary = false
     }
-    if (alldots) {
-      expandX.push(x)
+    if (isBoundary) {
+      bx.push(x)
     }
   }
-  let dx = 0
-  expandX.forEach(x => {
-    for (let y = 0; y < expandedUniverse.length; y++) {
-      expandedUniverse[y] =
-        expandedUniverse[y].substring(0, x + dx) +
-        '.' +
-        expandedUniverse[y].substring(x + dx)
-    }
-    dx++
-  })
 
-  return expandedUniverse
+  // vertical boundaries
+  const by = []
+  for (let y = 0; y < universe.length; y++) {
+    if (universe[y].split('').every(val => val === '.')) {
+      by.push(y)
+    }
+  }
+
+  return { x: bx, y: by }
 }
 
-function calculateShortestDistance (galA, galB) {
-  const x1 = galA[1]
-  const x2 = galB[1]
-  const y1 = galA[2]
-  const y2 = galB[2]
-  const dx = Math.abs(x1 - x2)
-  const dy = Math.abs(y1 - y2)
+function calculateShortestDistance (
+  source,
+  destination,
+  boundaries,
+  boundaryDistance
+) {
+  const sourceX = source[1]
+  const destinationX = destination[1]
+  const sourceY = source[2]
+  const destinationY = destination[2]
+  let dx = Math.abs(sourceX - destinationX)
+  let dy = Math.abs(sourceY - destinationY)
+  boundaries.x.forEach(boundaryX => {
+    if (
+      (sourceX < boundaryX && destinationX > boundaryX) ||
+      (destinationX < boundaryX && sourceX > boundaryX)
+    ) {
+      dx += boundaryDistance
+    }
+  })
+  boundaries.y.forEach(boundaryY => {
+    if (
+      (sourceY < boundaryY && destinationY > boundaryY) ||
+      (destinationY < boundaryY && sourceY > boundaryY)
+    ) {
+      dy += boundaryDistance
+    }
+  })
   return dx + dy
 }
